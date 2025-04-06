@@ -11,8 +11,8 @@
 --| ---------------------------------------------------------------------------
 --|
 --| FILENAME      : MooreElevatorController.vhd
---| AUTHOR(S)     : Capt Phillip Warner, Capt Dan Johnson, Capt Brian Yarbrough, ***YourName***
---| CREATED       : 03/2018 Last Modified on 06/24/2020
+--| AUTHOR(S)     : Capt Phillip Warner, Capt Dan Johnson, Capt Brian Yarbrough, C1C Matthew Romines
+--| CREATED       : 03/2018 Last Modified on 04/06/2025
 --| DESCRIPTION   : This file implements the ICE5 Basic elevator controller (Moore Machine)
 --|
 --|  The system is specified as follows:
@@ -95,15 +95,33 @@ begin
 	-- CONCURRENT STATEMENTS ------------------------------------------------------------------------------
 	
 	-- Next State Logic
-  
+    f_Q_next <= s_floor2 when (f_Q = s_floor1 and i_up_down = '1') else -- going up
+                s_floor3 when (f_Q = s_floor2 and i_up_down = '1') else
+                s_floor4 when (f_Q = s_floor3 and i_up_down = '1') else
+                s_floor3 when (f_Q = s_floor4 and i_up_down = '0') else
+                s_floor2 when (f_Q = s_floor3 and i_up_down = '0') else
+                s_floor1 when (f_Q = s_floor2 and i_up_down = '0') else
+                f_Q; -- default case
 	-- Output logic
-
-	-------------------------------------------------------------------------------------------------------
-	
+    with f_Q select
+        o_floor <= "0001" when s_floor1,
+                   "0010" when s_floor2,
+                   "0011" when s_floor3,
+                   "0100" when s_floor4,
+                   "0001" when others; 
 	-- PROCESSES ------------------------------------------------------------------------------------------	
 	
 	-- State register ------------
-	
+	register_proc : process (i_clk, i_reset)
+	begin
+	if i_reset = '0' then
+	   if ((rising_edge(i_clk)) and i_stop = '0') then
+	       f_Q <= f_Q_next;
+	   end if;
+   else 
+       f_Q <= s_floor2;
+	end if;
+	end process register_proc;	
 	
 	-------------------------------------------------------------------------------------------------------
 	

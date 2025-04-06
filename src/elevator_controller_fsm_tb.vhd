@@ -11,8 +11,8 @@
 --| ---------------------------------------------------------------------------
 --|
 --| FILENAME      : MooreElevatorController_tb.vhd (TEST BENCH)
---| AUTHOR(S)     : Capt Phillip Warner, Capt Dan Johnson, **Your Name Here**
---| CREATED       : 03/2017 Last modified on 06/24/2020
+--| AUTHOR(S)     : Capt Phillip Warner, Capt Dan Johnson, C1C Matthew Romines
+--| CREATED       : 03/2017 Last modified on 04/06/2025
 --| DESCRIPTION   : This file tests the Moore elevator controller module
 --|
 --| DOCUMENTATION : None
@@ -103,7 +103,7 @@ begin
         w_reset <= '1';  wait for k_clk_period;
             assert w_floor = x"2" report "bad reset" severity failure; 
         -- clear reset
-		
+		w_reset <= '0';
 		-- active UP signal
 		w_up_down <= '1'; 
 		
@@ -114,15 +114,20 @@ begin
         w_stop <= '1';  wait for k_clk_period * 2;
             assert w_floor = x"3" report "bad wait on floor3" severity failure;
 		--  go up again
-		
+		w_stop <= '0'; wait for k_clk_period;
+		    assert w_floor = x"4" report "bad up from floor3" severity failure;
 		-- go back down one floor
-		
+		w_up_down <= '0'; wait for k_clk_period;
+		    assert w_floor = x"3" report "bad down from floor4" severity failure;
 		-- go up the rest of the way
-		
+		w_up_down <= '1'; wait for k_clk_period * 2;
+		    assert w_floor = x"4" report "bad up from floor3" severity failure;
 		-- stop at top
-        
+        w_stop <= '1';  wait for k_clk_period * 2;
+            assert w_floor = x"4" report "bad wait on floor4" severity failure;
         -- go all the way down DOWN (how many clock cycles should that take?)
-        w_up_down <= '0'; 
+        w_stop <= '0'; w_up_down <= '0'; wait for k_clk_period * 4; -- 3 cycles to get there, one to make sure it stopped.
+            assert w_floor = x"1" report "bad down from floor 4" severity failure;
   
 		  	
 		wait; -- wait forever
